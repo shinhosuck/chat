@@ -1,0 +1,146 @@
+{% extends 'tweets/index.html' %}
+
+
+<title>
+    {% block title %}
+        Tweets
+    {% endblock title %}
+</title>
+
+
+{% block content %}
+    <style>
+        ::before,
+        ::after,
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: ubuntu, sans-serif;
+        }
+        textarea:focus {
+            outline: none;
+        }
+        .success {
+            color: blue
+        }
+        .error {
+            color: red
+        }
+        .tweets-form-wrapper,
+        .home-page-header,
+        .tweets {
+            width: 90%;
+            margin: 0 auto;
+        }
+        .tweets-form-wrapper > form {
+            width: 40%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            padding: 1.5rem;
+            background: rgb(233, 233, 233);
+            border-radius: 10px;
+        }
+        .tweets-form-wrapper > 
+        form > textarea {
+            flex: 0 0 100%;
+            padding: 1rem;
+            border: none
+        }
+
+        .home-page-header {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        .tweet-wrapper {
+            border: 2px solid rgb(0, 178, 209);
+            padding: 1rem;
+            border-radius: 10px;
+            max-width: 60%;
+            margin: 0 auto;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    {% if messages %}
+        {% for message in messages %}
+            <h3 class="{{ message.tags }}">{{ message }}</h3>
+        {% endfor %}
+    {% endif %}
+    <div class="tweets-container">
+        <div class="tweets-form-wrapper">
+            <form id="tweet-form" action="{% url 'tweets:new-tweet' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" value="{% url 'tweets:home' %}" name="next">
+                <textarea style='resize: none; border-radius: 5px;' name="content" id="" cols="40" rows="10" placeholder="Your tweet......"></textarea>
+                <button style='padding: 0.7rem 1rem; color: rgb(37, 37, 37); background: rgb(0, 195, 255); border-radius: 5px; margin-top: 0.7rem;
+                border:none; box-shadow: none; outline: none;'>Tweet</button>
+            </form>
+        </div>
+        <div class="home-page-header">
+            <h1>Welcome to Tweet Clone</h1>
+        </div>
+        <div class="tweets">
+
+        </div>
+    </div>
+    <script type="text/javascript">
+        const tweetForm = document.querySelector('#tweet-form')
+        const body = document.querySelector('body')
+
+        tweetForm.addEventListener('submit', function(event){
+            event.preventDefault()
+            const form = event.target
+            const formData = new FormData(form)
+            for(let i of formData.entries()){
+                console.log(i)
+            }
+            const url = form.getAttribute('action')
+            const method = form.getAttribute('method')
+            const xhr = new XMLHttpRequest()
+            const responseType = ''
+            xhr.open(method, url)
+            // xhr.setRequestHeader('HTTP_X_REQUESTED_WITH', 'XMLHttpRequest')
+            // xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+            xhr.onload = function(){
+                const response = xhr.response
+                // location.reload()
+                loadTweets()
+            }
+            xhr.send(formData)
+
+        })
+
+        let tweetsContainer = document.querySelector('.tweets')
+
+        function loadTweets(){
+            console.log('reloaded')
+            const xhr = new XMLHttpRequest()
+            const method = 'GET'
+            const url = '/tweets'
+            const responseType = 'json'
+
+            xhr.responseType = responseType
+            xhr.open(method, url)
+            xhr.onload = function(){
+                let tweetsContainer = document.querySelector('.tweets')
+                const tweets = xhr.response
+                let new_tweets = [...tweets.tweet_list]
+                new_tweets.forEach(function(item){
+                    const divElement = document.createElement('div')
+                    divElement.classList = 'tweet-wrapper'
+                    divElement.innerHTML = `<p>ID - ${item.id}</p> <p>Content - ${item.content}</p>`
+                    tweetsContainer.append(divElement)
+                    
+                })
+            }
+            xhr.send()
+        }
+        loadTweets()
+    </script>
+{% endblock content %}
