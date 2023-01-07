@@ -22,7 +22,8 @@ def home_view(request):
 
 
 def tweet_list_view(request):
-    tweets = Tweet.objects.all().order_by('-id')
+    # tweets = Tweet.objects.all().order_by('-id')
+    tweets = Tweet.objects.filter(content__icontains = 'new').order_by('-id')
     tweet_list = []
     for tweet in tweets:
         likes = random.randint(0, 200)
@@ -39,7 +40,7 @@ def tweet_create_view(request):
         form = TweetForm(request.POST)
         next_url = request.POST.get('next')
         if form.is_valid():
-            data = form.save(commit=False)
+            data = form.save()
             # if is_safe_url(next_url, ALLOWED_HOSTS):
             #     print('redirected')
             messages.success(request, 'New Tweet posted')
